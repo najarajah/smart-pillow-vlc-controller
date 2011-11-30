@@ -1,45 +1,36 @@
 package ch.inf.usi.ubicomp.pillow;
-import gnu.io.CommPortIdentifier;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import gnu.io.CommPortIdentifier; 
+import gnu.io.SerialPort;
+import gnu.io.SerialPortEvent; 
+import gnu.io.SerialPortEventListener; 
 import java.util.Enumeration;
 
-public class TISerialReader implements SerialPortEventListener {
-//	private static boolean DEBUG = false;
-
+public class SerialTest implements SerialPortEventListener {
 	SerialPort serialPort;
-	byte[] chunk = new byte[0];
-
-	private static final String PORT_NAME = "/dev/tty.usbmodem001"; // Mac, ez430
+	/** The port we're normally going to use. */
+	private static final String PORT_NAMES = "/dev/tty.usbserial-A600euXX";
 
 	/** Buffered input stream from the port */
 	private InputStream input;
-
 	/** The output stream to the port */
 	private OutputStream output;
-
 	/** Milliseconds to block while waiting for port open */
 	private static final int TIME_OUT = 2000;
-
 	/** Default bits per second for COM port. */
 	private static final int DATA_RATE = 9600;
 
 	public void initialize() {
 		CommPortIdentifier portId = null;
-		@SuppressWarnings("rawtypes")
 		Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
 
 		// iterate through, looking for the port
 		while (portEnum.hasMoreElements()) {
 			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-
-			if (currPortId.getName().equals(PORT_NAME)) {
+			if (currPortId.getName().equals(PORT_NAMES)) {
 				portId = currPortId;
-				System.out.println("Selected port " + currPortId.getName());
 				break;
 			}
 		}
@@ -51,7 +42,8 @@ public class TISerialReader implements SerialPortEventListener {
 
 		try {
 			// open serial port, and use class name for the appName.
-			serialPort = (SerialPort) portId.open(this.getClass().getName(), TIME_OUT);
+			serialPort = (SerialPort) portId.open(this.getClass().getName(),
+					TIME_OUT);
 
 			// set port parameters
 			serialPort.setSerialPortParams(DATA_RATE,
@@ -62,12 +54,6 @@ public class TISerialReader implements SerialPortEventListener {
 			// open the streams
 			input = serialPort.getInputStream();
 			output = serialPort.getOutputStream();
-
-			// sending init data to ez430
-			output.write(new byte[] {-1, 7, 3});
-			output.write(new byte[] {-1, 8, 7, 0, 0, 0, 0});
-
-			output.flush();
 
 			// add event listeners
 			serialPort.addEventListener(this);
@@ -88,21 +74,28 @@ public class TISerialReader implements SerialPortEventListener {
 		}
 	}
 
+	private String result = "";
+
 	/**
 	 * Handle an event on the serial port. Read the data and print it.
 	 */
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
+
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 			try {
 				int available = input.available();
-
-				chunk = new byte[available];
+				byte chunk[] = new byte[available];
 				input.read(chunk, 0, available);
+
+				// Displayed results are codepage dependent
+				String temp = new String(chunk);
+				result += temp;
 				
-				SmartPillow.setTiData(chunk);
-
-				output.write(new byte[] {-1, 8, 7, 0, 0, 0, 0});
-
+				if(temp.endsWith("\n")) {
+					result = result.substring(0, result.length() - 2);
+					System.out.println("Result: " + result);
+					result = "";
+				}
 
 			} catch (Exception e) {
 				System.err.println(e.toString());
@@ -112,8 +105,8 @@ public class TISerialReader implements SerialPortEventListener {
 	}
 
 	public static void main(String[] args) throws Exception {
-		TISerialReader main = new TISerialReader();
+		SerialTest main = new SerialTest();
 		main.initialize();
-		System.out.println("Started on " + main.serialPort);
+		System.out.println("Started");
 	}
 }

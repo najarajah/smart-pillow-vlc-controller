@@ -18,5 +18,10 @@ void setup() {
 void loop() {
  // read the value from the sensor:
  int flexValue = analogRead(sensorPin);
- Serial.println(flexValue);               
+ if(flexValue > 14 || flexValue < 6) {
+   Serial.println("bendato");
+ } else {
+   Serial.println("non-bendato");
+ }
+ delay(500);
 }

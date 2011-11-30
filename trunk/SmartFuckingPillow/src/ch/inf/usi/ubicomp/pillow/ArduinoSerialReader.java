@@ -10,11 +10,10 @@ import java.util.Enumeration;
 
 public class ArduinoSerialReader implements SerialPortEventListener {
 	private static boolean DEBUG = false;
-	
-	SerialPort serialPort;
-	byte[] chunk = new byte[0];
 
-	private static final String PORT_NAME = "/dev/tty.usbserial-A600eBIY"; // Mac, Arduino
+	SerialPort serialPort;
+
+	private static final String PORT_NAME = "/dev/tty.usbserial-A600euXX"; // Mac, Arduino
 
 	/** Buffered input stream from the port */
 	private InputStream input;
@@ -37,7 +36,7 @@ public class ArduinoSerialReader implements SerialPortEventListener {
 		// iterate through, looking for the port
 		while (portEnum.hasMoreElements()) {
 			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-			
+
 			if (currPortId.getName().equals(PORT_NAME)) {
 				portId = currPortId;
 				System.out.println("Selected port " + currPortId.getName());
@@ -83,24 +82,44 @@ public class ArduinoSerialReader implements SerialPortEventListener {
 		}
 	}
 
+	private String result = "";
+
 	/**
 	 * Handle an event on the serial port. Read the data and print it.
 	 */
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
+
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 			try {
 				int available = input.available();
-				chunk = new byte[available];
+				byte chunk[] = new byte[available];
 				input.read(chunk, 0, available);
 
 				// Displayed results are codepage dependent
-				if(DEBUG) System.out.print(new String(chunk));
+				String temp = new String(chunk);
+				result += temp;
 				
+				if(temp.endsWith("\n")) {
+					result = result.substring(0, result.length() - 2);
+					SmartPillow.setArduinoData(result);
+//					System.out.println("Result: " + result);
+					result = "";
+				}
+
 			} catch (Exception e) {
 				System.err.println(e.toString());
 			}
 		}
 		// Ignore all the other eventTypes, but you should consider the other ones.
+	}
+
+	public static int byteArrayToInt(byte[] b, int offset) {
+		int value = 0;
+		for (int i = 0; i < 4; i++) {
+			int shift = (4 - 1 - i) * 8;
+			value += (b[i + offset] & 0x000000FF) << shift;
+		}
+		return value;
 	}
 
 	public static void main(String[] args) throws Exception {

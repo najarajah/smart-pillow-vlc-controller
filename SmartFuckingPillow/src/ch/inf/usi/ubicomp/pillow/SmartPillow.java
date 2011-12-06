@@ -1,9 +1,16 @@
 package ch.inf.usi.ubicomp.pillow;
 
-public class SmartPillow {
+import ch.inf.usi.ubicomp.vlc.VLCCommands;
+
+public class SmartPillow implements Constants{
 
 	ArduinoSerialReader arduinoReader;
 	TISerialReader 		tiReader;
+	static VLCCommands vlc;
+	static boolean flexRedBent = false;
+	static boolean flexBlueBent = false;
+	static boolean flexGreenBent = false;
+	static boolean flexYellowBent = false;
 
 	private static String arduinoData 	= "";
 	private static byte[] tiData 		= new byte[0];
@@ -11,6 +18,7 @@ public class SmartPillow {
 	public SmartPillow() {
 		arduinoReader 	= new ArduinoSerialReader();
 		tiReader 		= new TISerialReader();
+		vlc = new VLCCommands();
 	}
 
 	public static void setArduinoData(String data) {
@@ -60,7 +68,27 @@ public class SmartPillow {
 			}
 			
 			if((ardata = SmartPillow.getArduinoData()) != null) {
-							
+				//for test
+				ardata = "pressure-triggered";
+			
+				if(SensorState.isFlexBlueBent(ardata)){
+					
+				}else if(SensorState.isFlexGreenBent(ardata)){
+					
+				}else if(SensorState.isFlexRedBent(ardata)){
+					
+				}else if(SensorState.isFlexRedBent(ardata)){
+					
+				}else if (SensorState.isPressure(ardata)){
+					//pressure sensor is triggered toggles  VLC fullscreen mode
+					System.out.println("pressure");
+					vlc.fullScreenCommand();
+					
+				}else{
+					
+				}
+				
+				
 				System.out.println(ardata);
 				
 				if(ardata.equals("bendato")) {

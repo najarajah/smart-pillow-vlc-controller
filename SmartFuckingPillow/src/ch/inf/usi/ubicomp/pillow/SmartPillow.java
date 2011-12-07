@@ -69,15 +69,15 @@ public class SmartPillow implements Constants{
 			
 			if((ardata = SmartPillow.getArduinoData()) != null) {
 				//for test
-				ardata = "pressure-triggered";
+				//ardata = "pressure-triggered";
 			
 				if(SensorState.isFlexBlueBent(ardata)){
-					
+					vlc.nextCommand();
 				}else if(SensorState.isFlexGreenBent(ardata)){
 					
 				}else if(SensorState.isFlexRedBent(ardata)){
-					
-				}else if(SensorState.isFlexRedBent(ardata)){
+					vlc.prevCommand();
+				}else if(SensorState.isFlexYellowBent(ardata)){
 					
 				}else if (SensorState.isPressure(ardata)){
 					//pressure sensor is triggered toggles  VLC fullscreen mode

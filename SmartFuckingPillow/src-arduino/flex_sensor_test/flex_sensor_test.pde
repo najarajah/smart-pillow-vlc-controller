@@ -38,35 +38,25 @@ void loop() {
  // get the value from red flex sensor and sent message if bent
  
  int flexRedValue = analogRead(flexRed);
- Serial.println(flexRedValue);
- if(flexRedValue > 250) {
+ int flexBlueValue = analogRead(flexBlue);
+ int flexGreenValue = analogRead(flexGreen);
+ int flexYellowValue = analogRead(flexYellow);
+  
+ int pressureSensorValue = analogRead(pressureSensor);
+ //Serial.println(flexRedValue);
+ if(flexRedValue > 100) {
   // Serial.println(flexRedValue);
    Serial.println("red-bent");
- }
- 
- //get the value from blue flex sensor and sent message if bent
- int flexBlueValue = analogRead(flexBlue);
- Serial.println(flexBlueValue);
- if(flexBlueValue > 250) {
+ }else if(flexBlueValue > 100) {
    Serial.println("blue-bent");
- }
- 
- //get the value from green flex sensor and sent message if bent
- int flexGreenValue = analogRead(flexGreen);
- if(flexGreenValue > 250) {
-   //Serial.println("green-bent");
- }
- 
- //get the value from the yellow flex sensor and sent message if bent
- int flexYellowValue = analogRead(flexYellow);
- if(flexYellowValue > 250) {
-   //Serial.println("yellow-bent");
- }
- 
- //get the pressure value from pressure sensor
- int pressureSensorValue = analogRead(pressureSensor);
- if(pressureSensorValue > 400){
- 	String pressure = "pressure-triggered";
+ }else if(flexGreenValue > 100) {
+   Serial.println("green-bent");
+ }else if(flexYellowValue > 100) {
+   Serial.println("yellow-bent");
+ }else if(pressureSensorValue > 400){
+   Serial.println("pressure-triggered");
+ }else{
+   Serial.println("");
  }
  
  
@@ -75,5 +65,5 @@ void loop() {
  Serial.println(flexBlueValue);
  Serial.println(flexYellowValue);*/
  
- delay(500);
+ delay(300);
 }

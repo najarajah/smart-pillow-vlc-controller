@@ -12,6 +12,12 @@ public class SmartPillow implements Constants{
 	static boolean flexGreenBent = false;
 	static boolean flexYellowBent = false;
 
+	static long flexRedBentTimestamp = 0;
+	static long flexBlueBentTimestamp = 0;
+	static long flexGreenBentTimestamp = 0;
+	static long flexYellowBentTimestamp = 0;
+
+
 	private static String arduinoData 	= "";
 	private static byte[] tiData 		= new byte[0];
 
@@ -26,7 +32,7 @@ public class SmartPillow implements Constants{
 			arduinoData = data;
 		}
 	}
-	
+
 	public static String getArduinoData() {
 		synchronized (arduinoData) {
 			return arduinoData;
@@ -38,7 +44,7 @@ public class SmartPillow implements Constants{
 			return tiData;
 		}
 	}
-	
+
 	public static void setTiData(byte[] data) {
 		synchronized (tiData) {
 			tiData = data;
@@ -52,66 +58,82 @@ public class SmartPillow implements Constants{
 
 	public static void main(String[] args) {
 		SmartPillow pillow = new SmartPillow();
-		
+
 		pillow.init();
-		
+
 		String ardata = null;
 		byte[] tidata;
-		
+
 		while(true) {
-			
-			try {
-				Thread.sleep(500);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+
 			if((ardata = SmartPillow.getArduinoData()) != null) {
 				//for test
 				//ardata = "pressure-triggered";
-			
-				if(SensorState.isFlexBlueBent(ardata)){
+
+				if(SensorState.isFlexBlueBent(ardata) && 
+						(System.currentTimeMillis() - flexBlueBentTimestamp  > Constants.EV_TIMEOUT)){
+
+					flexBlueBentTimestamp = System.currentTimeMillis();
 					vlc.nextCommand();
-				}else if(SensorState.isFlexGreenBent(ardata)){
-					
-				}else if(SensorState.isFlexRedBent(ardata)){
+
+				}else if(SensorState.isFlexRedBent(ardata) &&
+						(System.currentTimeMillis() - flexRedBentTimestamp  > Constants.EV_TIMEOUT)){
+
+					flexRedBentTimestamp = System.currentTimeMillis();
 					vlc.prevCommand();
-				}else if(SensorState.isFlexYellowBent(ardata)){
-					
-				}else if (SensorState.isPressure(ardata)){
-					//pressure sensor is triggered toggles  VLC fullscreen mode
-					System.out.println("pressure");
-					vlc.fullScreenCommand();
-					
-				}else{
-					
-				}
-				
-				
-				System.out.println(ardata);
-				
-				if(ardata.equals("bendato")) {
+
+				}else if(SensorState.isFlexGreenBent(ardata) &&
+						(System.currentTimeMillis() - flexGreenBentTimestamp  > Constants.EV_TIMEOUT)){
+
+					flexGreenBentTimestamp = System.currentTimeMillis();
+
 					
 					if((tidata = SmartPillow.getTiData()) != null) {
-						
 						if(tidata.length >= 7 && tidata[3] == 1) { 
 							// Displaying the three values of the coordinates
 							int x = tidata[4];
 							int y = tidata[5];
 							int z = tidata[6];
-
 							System.out.println("x: " + x + " y: " + y + " z: " + z);
 						}
 					}
-				} else {
-					// non fare un cazzo
-				}
-			}
-			
 
-				
-			
+
+				}else if(SensorState.isFlexYellowBent(ardata)){
+
+				}else if (SensorState.isPressure(ardata)){
+					//pressure sensor is triggered toggles  VLC fullscreen mode
+					System.out.println("pressure");
+					vlc.fullScreenCommand();
+
+				}else{
+					// do nothing
+				}
+
+
+				//System.out.println(ardata);
+
+				//				if(ardata.equals("bendato")) {
+				//
+				//					if((tidata = SmartPillow.getTiData()) != null) {
+				//
+				//						if(tidata.length >= 7 && tidata[3] == 1) { 
+				//							// Displaying the three values of the coordinates
+				//							int x = tidata[4];
+				//							int y = tidata[5];
+				//							int z = tidata[6];
+				//
+				//							System.out.println("x: " + x + " y: " + y + " z: " + z);
+				//						}
+				//					}
+				//				} else {
+				//					// non fare un cazzo
+				//				}
+			}
+
+
+
+
 		}
 	}
 }

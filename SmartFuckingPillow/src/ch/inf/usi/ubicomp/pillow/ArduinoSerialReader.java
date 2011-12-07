@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 
 public class ArduinoSerialReader implements SerialPortEventListener {
-	private static boolean DEBUG = false;
 
 	SerialPort serialPort;
 

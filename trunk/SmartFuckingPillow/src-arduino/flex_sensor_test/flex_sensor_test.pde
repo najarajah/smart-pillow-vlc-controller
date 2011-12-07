@@ -7,17 +7,17 @@
 *   Roberto Minelli
 * */
 
-int sensorPin = A0;     // select the input pin for the flex sensor
-int flexRed = "";
-int flexBlue = "";
-int flexGreen = "";
-int flexYellow = "";
-int pressureSensor = "";
+//int sensorPin = A0;     // select the input pin for the flex sensor
+int flexRed = A0;
+int flexBlue = A1;
+int flexGreen = A2;
+int flexYellow = A3;
+int pressureSensor = A4;
 
 void setup() {
  	Serial.begin(9600);
  // declare INPUTS and OUTPUTS:
- 	pinMode(sensorPin, INPUT);
+ 	//pinMode(sensorPin, INPUT);
  	pinMode(flexRed, INPUT);
  	pinMode(flexBlue, INPUT);
  	pinMode(flexGreen, INPUT);
@@ -36,27 +36,31 @@ void loop() {
  }*/
  
  // get the value from red flex sensor and sent message if bent
+ 
  int flexRedValue = analogRead(flexRed);
- if(flexRedValue > 14 || flexRedValue < 6) {
+ Serial.println(flexRedValue);
+ if(flexRedValue > 250) {
+  // Serial.println(flexRedValue);
    Serial.println("red-bent");
  }
  
  //get the value from blue flex sensor and sent message if bent
  int flexBlueValue = analogRead(flexBlue);
- if(flexBlueValue > 14 || flexBlueValue < 6) {
+ Serial.println(flexBlueValue);
+ if(flexBlueValue > 250) {
    Serial.println("blue-bent");
  }
  
  //get the value from green flex sensor and sent message if bent
  int flexGreenValue = analogRead(flexGreen);
- if(flexGreenValue > 14 || flexGreenValue < 6) {
-   Serial.println("green-bent");
+ if(flexGreenValue > 250) {
+   //Serial.println("green-bent");
  }
  
  //get the value from the yellow flex sensor and sent message if bent
  int flexYellowValue = analogRead(flexYellow);
- if(flexYellowValue > 14 || flexYellowValue < 6) {
-   Serial.println("yellow-bent");
+ if(flexYellowValue > 250) {
+   //Serial.println("yellow-bent");
  }
  
  //get the pressure value from pressure sensor
@@ -65,6 +69,11 @@ void loop() {
  	String pressure = "pressure-triggered";
  }
  
+ 
+ /*Serial.println(flexRedValue);
+ Serial.println(flexGreenValue);
+ Serial.println(flexBlueValue);
+ Serial.println(flexYellowValue);*/
  
  delay(500);
 }

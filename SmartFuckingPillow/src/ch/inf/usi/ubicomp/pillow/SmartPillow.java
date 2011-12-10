@@ -6,22 +6,28 @@ import ch.inf.usi.ubicomp.vlc.VLCController;
 
 public class SmartPillow implements Constants{
 
+	static boolean DEBUG = false;
+	
 	ArduinoSerialReader arduinoReader;
 	TISerialReader 		tiReader;
 
 	static VLCController 	vlcController;
 
+	//unused 
 	static boolean 		isRed 		= false;
-	static boolean 		isBlue 		= false;
-	static boolean 		isGreen 	= false;
-	static boolean 		isYellow	= false;
-
-	static long 		lastRedTime 	= 0;
 	static long 		lastBlueTime 	= 0;
 	static long 		lastGreenTime 	= 0;
 	static long 		lastYellowTime 	= 0;
+	
+	static boolean 		isBlue 		= false;
+	static boolean 		isGreen 	= false;
+	static boolean 		isYellow	= false;
+	static boolean 		isCenter	= false;
 
-
+	static long 		lastRedTime 	= 0;
+	static long 		lastCenterTime 	= 0;
+	static long 		lastTexasTime 	= 0;	
+	
 	private static String arduinoData 	= "";
 	private static byte[] texasData 	= new byte[0];
 
@@ -61,63 +67,144 @@ public class SmartPillow implements Constants{
 	}
 
 	public static void main(String[] args) {
-		
+
 		SmartPillow pillow = new SmartPillow();
 
 		pillow.init();
 
-		String ardata = null;
-		byte[] tidata;
+		String arduinoData = null;
+		byte[] texasData;
 
 		// Entering loop to process input
 		while(true) {
 
-			if((ardata = SmartPillow.getArduinoData()) != null 
-					&& !ardata.equals("")) {
-
-				// NEXT
-				if(SensorState.isBlue(ardata) && 
-						(System.currentTimeMillis() - lastBlueTime  > Constants.ANGLE_READ_TIMEOUT)) {
-
-					System.out.println(BLUE);
+			// CONTROLLING VOLUME
+			if(isGreen) {
+				
+				if((texasData = SmartPillow.getTexasData()) != null &&
+						texasData.length != 0) {
 					
-					lastBlueTime = System.currentTimeMillis();
-					vlcController.nextCommand();
+					int[] texasValues = parseTiData(texasData);
+					
+					if(isValidTexasRead(texasValues) &&
+						(System.currentTimeMillis() - lastTexasTime  > Constants.TEXAS_READ_TIMEOUT)) {
 
-				// PREVIOUS
-				} else if(SensorState.isRed(ardata) &&
+						lastTexasTime = System.currentTimeMillis();
+						
+						if (DEBUG) System.out.println("x: " + texasValues[0] + " y: " + texasValues[1] + " z: " + texasValues[2]);
+						
+						int x = texasValues[0];
+						
+						if(x < - 40) {
+							vlcController.increaseVolumeCommand(100);
+						} else if (x > 30){
+							vlcController.decreaseVolumeCommand(100);
+						}
+					}
+				}
+			}
+			
+			// CONTROLLING SEEK
+			if(isYellow) {
+				
+				if((texasData = SmartPillow.getTexasData()) != null &&
+						texasData.length != 0) {
+					
+					int[] texasValues = parseTiData(texasData);
+					
+					if(isValidTexasRead(texasValues) &&
+						(System.currentTimeMillis() - lastTexasTime  > Constants.TEXAS_READ_TIMEOUT)) {
+
+						lastTexasTime = System.currentTimeMillis();
+												
+						int y = texasValues[1];
+						
+						if(y < -30) {
+							vlcController.decreaseSeekCommand();
+						} else if (y > 30){
+							vlcController.increaseSeekCommand();
+						}
+					}
+				}
+			}
+			
+			// CONTROLLING NEXT/PREV
+			if(isBlue) {
+				
+				if((texasData = SmartPillow.getTexasData()) != null &&
+						texasData.length != 0) {
+					
+					int[] texasValues = parseTiData(texasData);
+					
+					if(isValidTexasRead(texasValues) &&
+						(System.currentTimeMillis() - lastTexasTime  > Constants.TEXAS_READ_TIMEOUT)) {
+
+						lastTexasTime = System.currentTimeMillis();
+						
+						if (DEBUG) System.out.println("x: " + texasValues[0] + " y: " + texasValues[1] + " z: " + texasValues[2]);
+						
+						int z = texasValues[2];
+						
+						System.out.println(z);
+						
+						// FIXME Come cazzo giocare con la z?!
+//						if(z < -30) {
+//							vlcController.nextCommand();
+//						} else if (z > 30){
+//							vlcController.prevCommand();
+//						}
+					}
+				}
+			}
+			
+			if((arduinoData = SmartPillow.getArduinoData()) != null 
+					&& !arduinoData.equals("")) {
+				
+				if(DEBUG) System.out.println(arduinoData);
+
+				// FULLSCREEN
+				 if(SensorState.isRed(arduinoData) &&
 						(System.currentTimeMillis() - lastRedTime  > Constants.ANGLE_READ_TIMEOUT)) {
 
-					System.out.println(RED);
-					
+					if (DEBUG) System.out.println(RED);
+
 					lastRedTime = System.currentTimeMillis();
-					vlcController.prevCommand();
-
-				// VOLUME
-				} else if(SensorState.isGreen(ardata)) {
 					
-					System.out.println(GREEN);
-					
-//					if((tidata = SmartPillow.getTexasData()) != null
-//							&& tidata.length != 0) {
-//
-//						int[] tiValues = parseTiData(tidata);
-//						
-//						if(isValidTexasRead(tiValues)) {
-//							System.out.println("x: " + tiValues[0] + " y: " + tiValues[1] + " z: " + tiValues[3]);
-//						}
-//
-//					}
-
-				} else if(SensorState.isYellow(ardata)) {
-
-					System.out.println(YELLOW);
-					
-				} else if(SensorState.isCenter(ardata)) {
-					//pressure sensor is triggered toggles  VLC fullscreen mode
 					vlcController.fullScreenCommand();
 
-				} else if(SensorState.isReset(ardata)){
+					// PLAY / PAUSE
+				} else if(SensorState.isCenter(arduinoData) &&
+						(System.currentTimeMillis() - lastCenterTime  > Constants.CENTER_READ_TIMEOUT)) {
+
+					if (DEBUG) System.out.println(CENTER);
+
+					lastCenterTime = System.currentTimeMillis();
+					
+					// FIXME
+					vlcController.playOrPauseCommand();
+
+					// NEXT / PREV
+				} else if(!isBlue && SensorState.isBlue(arduinoData)) {
+
+					if (DEBUG) System.out.println(BLUE);
+
+					isBlue = true;
+
+					// VOLUME
+				} else if(!isGreen && SensorState.isGreen(arduinoData)) { 
+
+					if (DEBUG) System.out.println(GREEN);
+					
+					isGreen = true;
+
+					// SEEK
+				} else if(!isYellow && SensorState.isYellow(arduinoData)) {
+					
+					if (DEBUG) System.out.println(YELLOW);
+					
+					isYellow = true;
+
+				} else if(SensorState.isReset(arduinoData)) {
 					resetState();
 				}
 			}
@@ -125,9 +212,11 @@ public class SmartPillow implements Constants{
 	}
 
 	private static void resetState() {
-		
+		if(isGreen) 	isGreen = false;
+		if(isYellow) 	isYellow = false;
+		if(isBlue) 		isBlue = false;
 	}
-	
+
 	private static int[] parseTiData(byte[] tidata) {
 		int[] result = new int[] {-Integer.MAX_VALUE, -Integer.MAX_VALUE, -Integer.MAX_VALUE};
 

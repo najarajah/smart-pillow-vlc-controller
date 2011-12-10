@@ -65,6 +65,15 @@ public class ParseVLCStatus {
 		return Integer.parseInt(el.getFirstChild().getNodeValue());	
 	}
 	
+	private String getState(){
+		Element el = getElement("state");
+		return el.getFirstChild().getNodeValue();	
+	}
+	
+	public boolean isPlaying() {
+		return getState().equals("playing");
+	}
+	
 	public int getPosition(){
 		Element el = getElement("position");
 		return Integer.parseInt(el.getFirstChild().getNodeValue());

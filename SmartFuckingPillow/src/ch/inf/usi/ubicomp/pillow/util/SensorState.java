@@ -11,8 +11,7 @@ public class SensorState implements Constants{
 	}
 	
 	public static boolean isGreen(String state){
-		return state.equals(Constants.BLUE);		
-
+		return state.equals(Constants.GREEN);		
 	}
 	
 	public static boolean isYellow(String state){

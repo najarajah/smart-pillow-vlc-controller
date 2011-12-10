@@ -1,30 +1,34 @@
 package ch.inf.usi.ubicomp.pillow;
 
-import ch.inf.usi.ubicomp.vlc.VLCCommands;
+import ch.inf.usi.ubicomp.pillow.util.Constants;
+import ch.inf.usi.ubicomp.pillow.util.SensorState;
+import ch.inf.usi.ubicomp.vlc.VLCController;
 
 public class SmartPillow implements Constants{
 
 	ArduinoSerialReader arduinoReader;
 	TISerialReader 		tiReader;
-	static VLCCommands vlc;
-	static boolean flexRedBent = false;
-	static boolean flexBlueBent = false;
-	static boolean flexGreenBent = false;
-	static boolean flexYellowBent = false;
 
-	static long flexRedBentTimestamp = 0;
-	static long flexBlueBentTimestamp = 0;
-	static long flexGreenBentTimestamp = 0;
-	static long flexYellowBentTimestamp = 0;
+	static VLCController 	vlcController;
+
+	static boolean 		isRed 		= false;
+	static boolean 		isBlue 		= false;
+	static boolean 		isGreen 	= false;
+	static boolean 		isYellow	= false;
+
+	static long 		lastRedTime 	= 0;
+	static long 		lastBlueTime 	= 0;
+	static long 		lastGreenTime 	= 0;
+	static long 		lastYellowTime 	= 0;
 
 
 	private static String arduinoData 	= "";
-	private static byte[] tiData 		= new byte[0];
+	private static byte[] texasData 	= new byte[0];
 
 	public SmartPillow() {
 		arduinoReader 	= new ArduinoSerialReader();
 		tiReader 		= new TISerialReader();
-		vlc = new VLCCommands();
+		vlcController 	= new VLCController();
 	}
 
 	public static void setArduinoData(String data) {
@@ -39,15 +43,15 @@ public class SmartPillow implements Constants{
 		}
 	}
 
-	public static byte[] getTiData() {
-		synchronized (tiData) {
-			return tiData;
+	public static byte[] getTexasData() {
+		synchronized (texasData) {
+			return texasData;
 		}
 	}
 
-	public static void setTiData(byte[] data) {
-		synchronized (tiData) {
-			tiData = data;
+	public static void setTexasData(byte[] data) {
+		synchronized (texasData) {
+			texasData = data;
 		}
 	}
 
@@ -57,6 +61,7 @@ public class SmartPillow implements Constants{
 	}
 
 	public static void main(String[] args) {
+		
 		SmartPillow pillow = new SmartPillow();
 
 		pillow.init();
@@ -64,76 +69,82 @@ public class SmartPillow implements Constants{
 		String ardata = null;
 		byte[] tidata;
 
+		// Entering loop to process input
 		while(true) {
 
-			if((ardata = SmartPillow.getArduinoData()) != null) {
-				//for test
-				//ardata = "pressure-triggered";
+			if((ardata = SmartPillow.getArduinoData()) != null 
+					&& !ardata.equals("")) {
 
-				if(SensorState.isFlexBlueBent(ardata) && 
-						(System.currentTimeMillis() - flexBlueBentTimestamp  > Constants.EV_TIMEOUT)){
+				// NEXT
+				if(SensorState.isBlue(ardata) && 
+						(System.currentTimeMillis() - lastBlueTime  > Constants.ANGLE_READ_TIMEOUT)) {
 
-					flexBlueBentTimestamp = System.currentTimeMillis();
-					vlc.nextCommand();
-
-				}else if(SensorState.isFlexRedBent(ardata) &&
-						(System.currentTimeMillis() - flexRedBentTimestamp  > Constants.EV_TIMEOUT)){
-
-					flexRedBentTimestamp = System.currentTimeMillis();
-					vlc.prevCommand();
-
-				}else if(SensorState.isFlexGreenBent(ardata) &&
-						(System.currentTimeMillis() - flexGreenBentTimestamp  > Constants.EV_TIMEOUT)){
-
-					flexGreenBentTimestamp = System.currentTimeMillis();
-
+					System.out.println(BLUE);
 					
-					if((tidata = SmartPillow.getTiData()) != null) {
-						if(tidata.length >= 7 && tidata[3] == 1) { 
-							// Displaying the three values of the coordinates
-							int x = tidata[4];
-							int y = tidata[5];
-							int z = tidata[6];
-							System.out.println("x: " + x + " y: " + y + " z: " + z);
-						}
-					}
+					lastBlueTime = System.currentTimeMillis();
+					vlcController.nextCommand();
 
+				// PREVIOUS
+				} else if(SensorState.isRed(ardata) &&
+						(System.currentTimeMillis() - lastRedTime  > Constants.ANGLE_READ_TIMEOUT)) {
 
-				}else if(SensorState.isFlexYellowBent(ardata)){
+					System.out.println(RED);
+					
+					lastRedTime = System.currentTimeMillis();
+					vlcController.prevCommand();
 
-				}else if (SensorState.isPressure(ardata)){
+				// VOLUME
+				} else if(SensorState.isGreen(ardata)) {
+					
+					System.out.println(GREEN);
+					
+//					if((tidata = SmartPillow.getTexasData()) != null
+//							&& tidata.length != 0) {
+//
+//						int[] tiValues = parseTiData(tidata);
+//						
+//						if(isValidTexasRead(tiValues)) {
+//							System.out.println("x: " + tiValues[0] + " y: " + tiValues[1] + " z: " + tiValues[3]);
+//						}
+//
+//					}
+
+				} else if(SensorState.isYellow(ardata)) {
+
+					System.out.println(YELLOW);
+					
+				} else if(SensorState.isCenter(ardata)) {
 					//pressure sensor is triggered toggles  VLC fullscreen mode
-					System.out.println("pressure");
-					vlc.fullScreenCommand();
+					vlcController.fullScreenCommand();
 
-				}else{
-					// do nothing
+				} else if(SensorState.isReset(ardata)){
+					resetState();
 				}
-
-
-				//System.out.println(ardata);
-
-				//				if(ardata.equals("bendato")) {
-				//
-				//					if((tidata = SmartPillow.getTiData()) != null) {
-				//
-				//						if(tidata.length >= 7 && tidata[3] == 1) { 
-				//							// Displaying the three values of the coordinates
-				//							int x = tidata[4];
-				//							int y = tidata[5];
-				//							int z = tidata[6];
-				//
-				//							System.out.println("x: " + x + " y: " + y + " z: " + z);
-				//						}
-				//					}
-				//				} else {
-				//					// non fare un cazzo
-				//				}
 			}
-
-
-
-
 		}
+	}
+
+	private static void resetState() {
+		
+	}
+	
+	private static int[] parseTiData(byte[] tidata) {
+		int[] result = new int[] {-Integer.MAX_VALUE, -Integer.MAX_VALUE, -Integer.MAX_VALUE};
+
+		if(tidata.length >= 7 && tidata[3] == 1) { 
+			result[0] = tidata[4]; 	//x
+			result[1] = tidata[5];	//y
+			result[2] = tidata[6];	//z
+		}
+
+		return result;
+	}
+
+	private static boolean isValidTexasRead(int[] texasValue) {
+		if(texasValue[0] == -Integer.MAX_VALUE &&
+				texasValue[1] == -Integer.MAX_VALUE &&
+				texasValue[2] == -Integer.MAX_VALUE) {
+			return false;
+		} return true;
 	}
 }

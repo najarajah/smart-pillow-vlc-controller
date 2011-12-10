@@ -5,7 +5,7 @@ public class Test{
 
 	public static void main(String[] args) throws InterruptedException {
 		
-		VLCCommands vlc = new VLCCommands();
+		VLCController vlc = new VLCController();
 		
 		vlc.playCommand();
 		Thread.sleep(3000);

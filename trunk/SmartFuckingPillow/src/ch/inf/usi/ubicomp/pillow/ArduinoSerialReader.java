@@ -12,7 +12,9 @@ public class ArduinoSerialReader implements SerialPortEventListener {
 
 	SerialPort serialPort;
 
-	private static final String PORT_NAME = "/dev/tty.usbserial-A600euXX"; // Mac, Arduino
+//	private static final String PORT_NAME = "/dev/tty.usbserial-A600euXX"; // Mac, Arduino
+	private static final String PORT_NAME = "/dev/tty.FireFly-A522-SPP"; // Mac, Arduino Bluetooth
+
 
 	/** Buffered input stream from the port */
 	private InputStream input;
@@ -22,10 +24,11 @@ public class ArduinoSerialReader implements SerialPortEventListener {
 	private OutputStream output;
 
 	/** Milliseconds to block while waiting for port open */
-	private static final int TIME_OUT = 2000;
+	private static final int TIME_OUT = 10000;
 
 	/** Default bits per second for COM port. */
-	private static final int DATA_RATE = 9600;
+//	private static final int DATA_RATE = 9600;
+	private static final int DATA_RATE = 115200;
 
 	public void initialize() {
 		CommPortIdentifier portId = null;
@@ -87,7 +90,7 @@ public class ArduinoSerialReader implements SerialPortEventListener {
 	 * Handle an event on the serial port. Read the data and print it.
 	 */
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
-
+		
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 			try {
 				int available = input.available();
@@ -101,7 +104,6 @@ public class ArduinoSerialReader implements SerialPortEventListener {
 				if(temp.endsWith("\n")) {
 					result = result.substring(0, result.length() - 2);
 					SmartPillow.setArduinoData(result);
-//					System.out.println("Result: " + result);
 					result = "";
 				}
 

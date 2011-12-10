@@ -24,7 +24,7 @@ public class ParseVLCStatus {
 	
 	public ParseVLCStatus(){
 		try {
-			is = new ByteArrayInputStream(VLCCommands.getStatus().getBytes("UTF-8"));
+			is = new ByteArrayInputStream(VLCController.getStatus().getBytes("UTF-8"));
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			db = dbf.newDocumentBuilder();
 			dom = db.parse(is);
@@ -72,7 +72,7 @@ public class ParseVLCStatus {
 	
 	public void reloadXML(){
 		try {
-			is = new ByteArrayInputStream(VLCCommands.getStatus().getBytes("UTF-8"));
+			is = new ByteArrayInputStream(VLCController.getStatus().getBytes("UTF-8"));
 			dom = db.parse(is);
 			root = dom.getDocumentElement();
 		} catch (UnsupportedEncodingException e) {

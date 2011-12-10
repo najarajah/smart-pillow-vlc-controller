@@ -99,7 +99,7 @@ public class TISerialReader implements SerialPortEventListener {
 				chunk = new byte[available];
 				input.read(chunk, 0, available);
 				
-				SmartPillow.setTiData(chunk);
+				SmartPillow.setTexasData(chunk);
 
 				output.write(new byte[] {-1, 8, 7, 0, 0, 0, 0});
 

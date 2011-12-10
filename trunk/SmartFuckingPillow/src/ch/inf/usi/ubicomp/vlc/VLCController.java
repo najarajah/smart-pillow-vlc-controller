@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class VLCCommands
+public class VLCController
 {
 	/**
 	 * Sends an HTTP GET request to a url
@@ -19,7 +19,7 @@ public class VLCCommands
 	
 	public ParseVLCStatus parseVLC;
 	
-	public VLCCommands(){
+	public VLCController(){
 		parseVLC = new ParseVLCStatus();
 		
 	}

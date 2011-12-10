@@ -85,11 +85,19 @@ public class VLCController
 	}
 	
 	public String increaseVolumeCommand(){
-		return sendGetRequest("http://localhost:8080/requests/status.xml", "command=volume&val=%2B20");
+		return increaseVolumeCommand(20);
 	}
 	
 	public String decreaseVolumeCommand(){
-		return sendGetRequest("http://localhost:8080/requests/status.xml", "command=volume&val=-20");
+		return decreaseVolumeCommand(20);
+	}
+	
+	public String increaseVolumeCommand(int delta){
+		return sendGetRequest("http://localhost:8080/requests/status.xml", "command=volume&val=%2B"+ delta);
+	}
+	
+	public String decreaseVolumeCommand(int delta){
+		return sendGetRequest("http://localhost:8080/requests/status.xml", "command=volume&val=-" + delta);
 	}
 	
 	public static String getStatus(){
@@ -120,6 +128,14 @@ public class VLCController
 			return "not send";
 		}			
 			
+	}
+
+	public void playOrPauseCommand() {
+		if(parseVLC.isPlaying()) {
+			pauseCommand();
+		} else {
+			playCommand();
+		}
 	}
 	
 	

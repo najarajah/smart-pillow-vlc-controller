@@ -7,7 +7,7 @@ public class Test{
 		
 		VLCController vlc = new VLCController();
 		
-		vlc.playCommand();
+		vlc.playOrPauseCommand();
 		Thread.sleep(3000);
 		//vlc.pauseCommand();
 		//Thread.sleep(3000);
@@ -28,13 +28,17 @@ public class Test{
 		vlc.decreaseVolumeCommand();
 		vlc.decreaseVolumeCommand();
 		vlc.increaseSeekCommand();
+		Thread.sleep(6000);
+		vlc.pauseCommand();
+		Thread.sleep(6000);
+		vlc.pauseCommand();
+		/*vlc.increaseSeekCommand();
 		Thread.sleep(3000);
 		vlc.increaseSeekCommand();
 		Thread.sleep(3000);
 		vlc.increaseSeekCommand();
 		Thread.sleep(3000);
-		vlc.increaseSeekCommand();
-		Thread.sleep(3000);
+		vlc.playOrPauseCommand();
 		vlc.increaseSeekCommand();
 		Thread.sleep(3000);
 		vlc.increaseSeekCommand();
@@ -45,7 +49,7 @@ public class Test{
 		Thread.sleep(3000);
 		vlc.increaseSeekCommand();
 		Thread.sleep(3000);
-		vlc.increaseSeekCommand();
+		vlc.increaseSeekCommand();*/
 //		System.out.println(vlc.parseVLC.getPosition());
 		
 		

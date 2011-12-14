@@ -129,12 +129,17 @@ public class VLCController
 		}			
 			
 	}
-
+	
+	/*
+	 * Triggers playCommand when the state is stopped, if state is playing or paused it triggers pause to resume/pause
+	 * video reproduction.
+	 * It acts like a toggle for play/pause resuming from the last playing position (exactly, you have to send pause command in order to resume!)
+	 */
 	public void playOrPauseCommand() {
-		if(parseVLC.isPlaying()) {
-			pauseCommand();
-		} else {
+		if(parseVLC.isStopped()) {
 			playCommand();
+		} else {
+			pauseCommand();
 		}
 	}
 	

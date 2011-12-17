@@ -143,16 +143,13 @@ public class SmartPillow implements Constants{
 						
 						if (DEBUG) System.out.println("x: " + texasValues[0] + " y: " + texasValues[1] + " z: " + texasValues[2]);
 						
-						int z = texasValues[2];
+						int y = texasValues[1];
 						
-						System.out.println(z);
-						
-						// FIXME Come cazzo giocare con la z?!
-//						if(z < -30) {
-//							vlcController.nextCommand();
-//						} else if (z > 30){
-//							vlcController.prevCommand();
-//						}
+						if(y < -30) {
+							vlcController.prevCommand();
+						} else if (y > 30){
+							vlcController.nextCommand();
+						}
 					}
 				}
 			}
@@ -180,7 +177,6 @@ public class SmartPillow implements Constants{
 
 					lastCenterTime = System.currentTimeMillis();
 					
-					// FIXME
 					vlcController.playOrPauseCommand();
 
 					// NEXT / PREV

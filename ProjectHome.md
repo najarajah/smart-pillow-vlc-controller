@@ -1,0 +1,1 @@
+We want to control VLC by using a pillow with embedded sensors connected to Arduino and a Texas Instrument ez430 watch.
